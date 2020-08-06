@@ -22,24 +22,24 @@ public class Corona extends JFrame
 		// First, connect to MySQL
 		try
 		{
-        		Class.forName("com.mysql.cj.jdbc.Driver");
-            		conn = DriverManager.getConnection("jdbc:mysql://" + host + ":" + port + "/" + database + "?useUnicode=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC&autoReconnect=true&verifyServerCertificate=false&useSSL=true",username,password);
-        		conn.setAutoCommit(false);
-            		stmt = conn.createStatement();
-        	}
+        	Class.forName("com.mysql.cj.jdbc.Driver");
+            conn = DriverManager.getConnection("jdbc:mysql://" + host + ":" + port + "/" + database + "?useUnicode=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC&autoReconnect=true&verifyServerCertificate=false&useSSL=true",username,password);
+        	conn.setAutoCommit(false);
+            stmt = conn.createStatement();
+        }
 		catch(Exception e)
 		{
-			System.out.println("\n***Database connection was not established***\n");
-			e.printStackTrace();
-			System.exit(1);
-		}
+            System.out.println("\n***Database connection was not established***\n");
+            e.printStackTrace();
+            System.exit(1);
+        }
 		
 		System.out.println("Connected!");
 		
 		// Create the Graphical User Interface (GUI) frame
 		JFrame frame = new JFrame("Demo Frame");
 		frame.getContentPane();
-	    	mainMenu(frame); // start at the main menu
+	    mainMenu(frame); // start at the main menu
 	}
 	
 	public static void mainMenu(JFrame frame) throws SQLException
@@ -70,16 +70,16 @@ public class Corona extends JFrame
 	    button1.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e)
             {
-            	try
+                try
                 {
-            		mainmenu.removeAll(); // clear the panel before you create the next!
-			countyQuery(frame);
-		} 
+                	mainmenu.removeAll(); // clear the panel before you create the next!
+					countyQuery(frame);
+				} 
                 catch (SQLException e1)
                 {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
             }
         });
 	    
@@ -191,56 +191,116 @@ public class Corona extends JFrame
 	    date.addItem("July 14, 2020");
 	    date.addItem("July 21, 2020");
 
-		// state combo-box
-	    String selectedDate = String.valueOf(date.getSelectedItem());
-	    String sqlDate;
+	    JComboBox<String> states = new JComboBox<String>();
+	    states.addItem("SELECT STATE");
+	    // don't add anything until a date is selected
+	    // this should be disabled if no date is selected
+	    states.setEnabled(false);
 	    
-	    // have to format the date string so it can be processed in the upcoming SQL query
-	    switch (selectedDate)
-	    {
-	    	case "March 24, 2020":
-	    		sqlDate = "March_24_2020";
-	    	case "March 31, 2020":
-	    		sqlDate = "March_31_2020";
-	    	case "April 7, 2020":
-	    		sqlDate = "April_07_2020";
-	    	case "April 14, 2020":
-	    		sqlDate = "April_14_2020";
-	    	case "April 21, 2020":
-	    		sqlDate = "April_21_2020";
-	    	case "April 28, 2020":
-	    		sqlDate = "April_28_2020";
-	    	case "May 5, 2020":
-	    		sqlDate = "May_05_2020";
-	    	case "May 12, 2020":
-	    		sqlDate = "May_12_2020";
-	    	case "May 19, 2020":
-	    		sqlDate = "May_19_2020";
-	    	case "May 26, 2020":
-	    		sqlDate = "May_26_2020";
-	    	case "June 2, 2020":
-	    		sqlDate = "June_02_2020";
-	    	case "June 9, 2020":
-	    		sqlDate = "June_09_2020";
-	    	case "June 16, 2020":
-	    		sqlDate = "June_16_2020";
-	    	case "June 23, 2020":
-	    		sqlDate = "June_23_2020";
-	    	case "June 30, 2020":
-	    		sqlDate = "June_30_2020";
-	    	case "July 7, 2020":
-	    		sqlDate = "July_07_2020";
-	    	case "July 14, 2020":
-	    		sqlDate = "July_14_2020";
-	    	case "July 21, 2020":
-	    		sqlDate = "July_21_2020";
-	    		
-	    }
-	    // sqlDate will be the current data selected in the date combo-box
-	    // if set to "SELECT", nothing should happen
-	    ResultSet states = stmt.executeQuery("SELECT DISTINCT state FROM March_24_2020\n" + 
-	    		"ORDER BY state;")
+	    JComboBox<String> counties = new JComboBox<String>();
+	    counties.addItem("SELECT COUNTY");
+	    // don't add anything until a state is selected
+	    // this should be disabled if no state is selected
+	    counties.setEnabled(false);
+	    
+	    
+	    // ComboBox ActionListener for date... after all the combo-boxes have been created
+	    // when a date is selected
+	    date.addActionListener(new ActionListener() {
+	    	public void actionPerformed(ActionEvent e)
+	    	{
+	    		// state combo-box
+	    	    String selectedDate = (String) date.getSelectedItem();
+	    	    String sqlDate;
+	    	    
+	    	    // have to format the date string so it can be processed in the upcoming SQL query
+	    	    switch (selectedDate)
+	    	    {
+	    	    	case "March 24, 2020":
+	    	    		sqlDate = "March_24_2020";
+	    	    		states.setEnabled(true);
+	    	    		break;
+	    	    	case "March 31, 2020":
+	    	    		sqlDate = "March_31_2020";
+	    	    		states.setEnabled(true);
+	    	    		break;
+	    	    	case "April 7, 2020":
+	    	    		sqlDate = "April_07_2020";
+	    	    		states.setEnabled(true);
+	    	    		break;
+	    	    	case "April 14, 2020":
+	    	    		sqlDate = "April_14_2020";
+	    	    		states.setEnabled(true);
+	    	    		break;
+	    	    	case "April 21, 2020":
+	    	    		sqlDate = "April_21_2020";
+	    	    		states.setEnabled(true);
+	    	    		break;
+	    	    	case "April 28, 2020":
+	    	    		sqlDate = "April_28_2020";
+	    	    		states.setEnabled(true);
+	    	    		break;
+	    	    	case "May 5, 2020":
+	    	    		sqlDate = "May_05_2020";
+	    	    		states.setEnabled(true);
+	    	    		break;
+	    	    	case "May 12, 2020":
+	    	    		sqlDate = "May_12_2020";
+	    	    		states.setEnabled(true);
+	    	    		break;
+	    	    	case "May 19, 2020":
+	    	    		sqlDate = "May_19_2020";
+	    	    		states.setEnabled(true);
+	    	    		break;
+	    	    	case "May 26, 2020":
+	    	    		sqlDate = "May_26_2020";
+	    	    		states.setEnabled(true);
+	    	    		break;
+	    	    	case "June 2, 2020":
+	    	    		sqlDate = "June_02_2020";
+	    	    		states.setEnabled(true);
+	    	    		break;
+	    	    	case "June 9, 2020":
+	    	    		sqlDate = "June_09_2020";
+	    	    		states.setEnabled(true);
+	    	    		break;
+	    	    	case "June 16, 2020":
+	    	    		sqlDate = "June_16_2020";
+	    	    		states.setEnabled(true);
+	    	    		break;
+	    	    	case "June 23, 2020":
+	    	    		sqlDate = "June_23_2020";
+	    	    		states.setEnabled(true);
+	    	    		break;
+	    	    	case "June 30, 2020":
+	    	    		sqlDate = "June_30_2020";
+	    	    		states.setEnabled(true);
+	    	    		break;
+	    	    	case "July 7, 2020":
+	    	    		sqlDate = "July_07_2020";
+	    	    		states.setEnabled(true);
+	    	    		break;
+	    	    	case "July 14, 2020":
+	    	    		sqlDate = "July_14_2020";
+	    	    		states.setEnabled(true);
+	    	    		break;
+	    	    	case "July 21, 2020":
+	    	    		sqlDate = "July_21_2020";
+	    	    		states.setEnabled(true);
+	    	    		break;
+	    	    	default:
+	    	    		states.setEnabled(false);
+	    	    		// nothing happens if no date is selected!
+	    	    		return;// get out of here!
+	    	    }
+	    	    
+	    	    // now populate the states combo-box with... the states!
+	    	    ResultSet states = stmt.executeQuery("SELECT DISTINCT state FROM " + sqlDate + " ORDER BY state;");
+	    	    
+            }
+	    });
 		
+	    	    
 		// respective county combo-box
 	    
 	    		
@@ -255,6 +315,7 @@ public class Corona extends JFrame
 		cdra.addItem("Recoveries");
 		cdra.addItem("Active cases");
 		
+		/*** WHEW.. THAT WAS A LOT OF WORK! ***/
 		
 	    // Before anything can be added...
 	    countymenu.setLayout(null);
