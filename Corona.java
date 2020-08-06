@@ -1,4 +1,5 @@
 import java.sql.*;
+import java.sql.*;
 import java.io.*;
 import java.util.*;
 import java.lang.Object;
@@ -209,8 +210,7 @@ public class Corona extends JFrame
 	    date.addActionListener(new ActionListener() {
 	    	public void actionPerformed(ActionEvent e)
 	    	{
-	    		// state combo-box
-	    	    String selectedDate = (String) date.getSelectedItem();
+	    		final String selectedDate = (String) date.getSelectedItem();
 	    	    String sqlDate;
 	    	    
 	    	    // have to format the date string so it can be processed in the upcoming SQL query
@@ -295,7 +295,22 @@ public class Corona extends JFrame
 	    	    }
 	    	    
 	    	    // now populate the states combo-box with... the states!
-	    	    ResultSet states = stmt.executeQuery("SELECT DISTINCT state FROM " + sqlDate + " ORDER BY state;");
+	    	    try
+	    	    {
+					ResultSet all_states = stmt.executeQuery("SELECT DISTINCT state FROM " + sqlDate + " ORDER BY state;");
+					conn.commit();
+					states.removeAllItems(); // reset the states combo-box first!
+					states.addItem("SELECT STATE");
+					while (all_states.next()) // add all the states (plus DC!)
+					{
+						states.addItem(all_states.getString("state"));
+					}
+				}
+	    	    catch (SQLException e1)
+	    	    {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
 	    	    
             }
 	    });
@@ -385,9 +400,17 @@ public class Corona extends JFrame
 	}
 }
 
-/* STILL NEED TO FIGURE OUT HOW TO...
- * - implement button actions
- * - create drop-down menus
- * - resize buttons
- * - add graphs
-*/
+/***
+SQL Help:
+
+-- output all the states from a particular day
+SELECT DISTINCT state
+FROM March_24_2020
+ORDER BY state;
+
+-- output all the counties in Alabama
+SELECT DISTINCT county
+FROM March_24_2020
+WHERE state = "Delaware"
+ORDER BY county;
+***/
