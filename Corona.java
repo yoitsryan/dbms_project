@@ -22,24 +22,24 @@ public class Corona extends JFrame
 		// First, connect to MySQL
 		try
 		{
-        	Class.forName("com.mysql.cj.jdbc.Driver");
-            conn = DriverManager.getConnection("jdbc:mysql://" + host + ":" + port + "/" + database + "?useUnicode=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC&autoReconnect=true&verifyServerCertificate=false&useSSL=true",username,password);
-        	conn.setAutoCommit(false);
-            stmt = conn.createStatement();
-        }
+        		Class.forName("com.mysql.cj.jdbc.Driver");
+            		conn = DriverManager.getConnection("jdbc:mysql://" + host + ":" + port + "/" + database + "?useUnicode=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC&autoReconnect=true&verifyServerCertificate=false&useSSL=true",username,password);
+        		conn.setAutoCommit(false);
+            		stmt = conn.createStatement();
+        	}
 		catch(Exception e)
 		{
-            System.out.println("\n***Database connection was not established***\n");
-            e.printStackTrace();
-            System.exit(1);
-        }
+			System.out.println("\n***Database connection was not established***\n");
+			e.printStackTrace();
+			System.exit(1);
+		}
 		
 		System.out.println("Connected!");
 		
 		// Create the Graphical User Interface (GUI) frame
 		JFrame frame = new JFrame("Demo Frame");
 		frame.getContentPane();
-	    mainMenu(frame); // start at the main menu
+	    	mainMenu(frame); // start at the main menu
 	}
 	
 	public static void mainMenu(JFrame frame) throws SQLException
