@@ -70,16 +70,16 @@ public class Corona extends JFrame
 	    button1.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e)
             {
-                try
+            	try
                 {
-                	mainmenu.removeAll(); // clear the panel before you create the next!
-					countyQuery(frame);
-				} 
+            		mainmenu.removeAll(); // clear the panel before you create the next!
+			countyQuery(frame);
+		} 
                 catch (SQLException e1)
                 {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				}
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
             }
         });
 	    
