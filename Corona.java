@@ -3,6 +3,7 @@ import java.io.*;
 import java.util.*;
 import java.lang.Object;
 import javax.swing.*;
+import javax.sql.rowset.*;
 import java.awt.*; // includes Dimension, Button, KeyListener
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -173,55 +174,55 @@ public class Corona extends JFrame
 	    
 	    /** 1st **/
 	    // date combo-box
-	    JComboBox<String> date = new JComboBox<String>();
-	    date.addItem("SELECT DAY");
-	    date.addItem("March 24, 2020");
-	    date.addItem("March 31, 2020");
-	    date.addItem("April 7, 2020");
-	    date.addItem("April 14, 2020");
-	    date.addItem("April 21, 2020");
-	    date.addItem("April 28, 2020");
-	    date.addItem("May 5, 2020");
-	    date.addItem("May 12, 2020");
-	    date.addItem("May 19, 2020");
-	    date.addItem("May 26, 2020");
-	    date.addItem("June 2, 2020");
-	    date.addItem("June 9, 2020");
-	    date.addItem("June 16, 2020");
-	    date.addItem("June 23, 2020");
-	    date.addItem("June 30, 2020");
-	    date.addItem("July 7, 2020");
-	    date.addItem("July 14, 2020");
-	    date.addItem("July 21, 2020");
-	    date.setEnabled(true); // this combo-box is to ALWAYS be enabled! :)
+	    JComboBox<String> date1 = new JComboBox<String>();
+	    date1.addItem("SELECT DAY");
+	    date1.addItem("March 24, 2020");
+	    date1.addItem("March 31, 2020");
+	    date1.addItem("April 7, 2020");
+	    date1.addItem("April 14, 2020");
+	    date1.addItem("April 21, 2020");
+	    date1.addItem("April 28, 2020");
+	    date1.addItem("May 5, 2020");
+	    date1.addItem("May 12, 2020");
+	    date1.addItem("May 19, 2020");
+	    date1.addItem("May 26, 2020");
+	    date1.addItem("June 2, 2020");
+	    date1.addItem("June 9, 2020");
+	    date1.addItem("June 16, 2020");
+	    date1.addItem("June 23, 2020");
+	    date1.addItem("June 30, 2020");
+	    date1.addItem("July 7, 2020");
+	    date1.addItem("July 14, 2020");
+	    date1.addItem("July 21, 2020");
+	    date1.setEnabled(true); // this combo-box is to ALWAYS be enabled! :)
 
 	    /** 2nd **/
 	    // state combo-box
-	    JComboBox<String> states = new JComboBox<String>();
-	    states.addItem("SELECT STATE");
+	    JComboBox<String> states1 = new JComboBox<String>();
+	    states1.addItem("SELECT STATE");
 	    // don't add anything until a date is selected
-	    states.setEnabled(false); // this should be disabled if no date is selected
+	    states1.setEnabled(false); // this should be disabled if no date is selected
 	    
 	    /** 3rd **/
 	    // county combo-box
-	    JComboBox<String> counties = new JComboBox<String>();
-	    counties.addItem("SELECT COUNTY");
+	    JComboBox<String> counties1 = new JComboBox<String>();
+	    counties1.addItem("SELECT COUNTY");
 	    // don't add anything until a state is selected
-	    counties.setEnabled(false); // this should be disabled if no state is selected
+	    counties1.setEnabled(false); // this should be disabled if no state is selected
 	    
 	    /** 4th **/
 	    // confirmed (cases), deaths, recoveries, or active?
-	    JComboBox<String> cdra = new JComboBox<String>();
+	    JComboBox<String> cdra1 = new JComboBox<String>();
 		// add items to the combo box
-		cdra.addItem("SELECT");
-		cdra.addItem("cases");
-		cdra.addItem("deaths");
-		cdra.addItem("recoveries");
-		cdra.addItem("active");
-		cdra.setEnabled(false); // this should be disabled if no county is selected
+		cdra1.addItem("SELECT");
+		cdra1.addItem("confirmed");
+		cdra1.addItem("deaths");
+		cdra1.addItem("recovered");
+		cdra1.addItem("active");
+		cdra1.setEnabled(false); // this should be disabled if no county is selected
 		
 		/** 5th **/
-	    // first apply button (for determining the number of cases
+	    // first apply button (for determining the number of cases)
 	    JButton apply1 = new JButton("Apply");
 	    Dimension a1Size = to_main.getPreferredSize();
 	    apply1.setBounds(300, 160, a1Size.width, a1Size.height);
@@ -238,26 +239,20 @@ public class Corona extends JFrame
 	    /** 1st **/
 	    // ComboBox ActionListener for date... after all the combo-boxes have been created
 	    // when a date is selected
-	    date.addActionListener(new ActionListener() {
+	    date1.addActionListener(new ActionListener() {
 	    	public void actionPerformed(ActionEvent e)
 	    	{
-	    		final String selectedDate = (String) date.getSelectedItem();
+	    		final String selectedDate = (String) date1.getSelectedItem();
 	    	    String sqlDate = sqlDateFormat(selectedDate);
 	    	    
 	    	    boolean enableStates = false;
 	    	    
 	    	    if (sqlDate == null) // if no date is selected, remove all the states!
 	    	    {
-	    	    	
-	    	    	states.setEnabled(false);
-	    	    	// delete every item in the states combo-box except for the default
-					for (int i = states.getItemCount() - 1; i >= 0; i--)
-					{
-						if (!states.getItemAt(i).equals("SELECT STATE"))
-						{
-							states.removeItemAt(i);
-						}
-					}
+	    	    	states1.setEnabled(false);
+	    	    	counties1.setEnabled(false);
+	    	    	cdra1.setEnabled(false);
+	    	    	apply1.setEnabled(false);
 	    	    	return;
 	    	    }
 	    	    else
@@ -268,24 +263,27 @@ public class Corona extends JFrame
 	    	    // now populate the states combo-box with... the states!
 	    	    try
 	    	    {
-	    	    	states.setEnabled(false); // before you reset its contents
-					ResultSet all_states = stmt.executeQuery("SELECT DISTINCT state FROM " + sqlDate + " ORDER BY state;");
+	    	    	states1.setEnabled(false); // before you reset its contents
+	    	    	ResultSet all_states;
+	    	    	Statement getStates;
+	    	    	getStates = conn.createStatement();
+					all_states = getStates.executeQuery("SELECT DISTINCT state FROM " + sqlDate + " ORDER BY state;");
 					
 					// delete every item in the states combo-box except for the default
-					for (int i = states.getItemCount() - 1; i >= 0; i--)
+					for (int i = states1.getItemCount() - 1; i >= 0; i--)
 					{
-						if (!states.getItemAt(i).equals("SELECT STATE"))
+						if (!states1.getItemAt(i).equals("SELECT STATE"))
 						{
-							states.removeItemAt(i);
+							states1.removeItemAt(i);
 						}
 					}
 					
 					if (enableStates)
 					{
-						states.setEnabled(true);
+						states1.setEnabled(true);
 						while (all_states.next()) // add all the states (plus DC!)
 						{
-							states.addItem(all_states.getString("state"));
+							states1.addItem(all_states.getString("state"));
 						}
 					}
 					conn.commit();
@@ -302,11 +300,11 @@ public class Corona extends JFrame
 	    /** 2nd **/
 	    // ComboBox ActionListener for state
 	    // when a state is selected
-	    states.addActionListener(new ActionListener() {
+	    states1.addActionListener(new ActionListener() {
 	    	public void actionPerformed(ActionEvent e)
 	    	{
-	    		final String selectedState = (String) states.getSelectedItem();
-    			final String selectedDate = (String) date.getSelectedItem(); // trust me, you'll need this
+	    		final String selectedState = (String) states1.getSelectedItem();
+    			final String selectedDate = (String) date1.getSelectedItem(); // trust me, you'll need this
     			String sqlDate = sqlDateFormat(selectedDate);
     			
     			boolean enableCounties = false;
@@ -314,8 +312,9 @@ public class Corona extends JFrame
     			if (selectedState.equals("SELECT STATE"))
     			{
     				// just disable all the combo-boxes ahead!
-    				counties.setEnabled(false);
-    				cdra.setEnabled(false);
+    				counties1.setEnabled(false);
+    				cdra1.setEnabled(false);
+    				apply1.setEnabled(false);
     				return; // get out!
     			}
     			else
@@ -326,24 +325,24 @@ public class Corona extends JFrame
     			// now populate the counties combo-box with... the counties!
 	    		try
 	    		{
-	    			counties.setEnabled(false);
+	    			counties1.setEnabled(false);
 	    			ResultSet all_counties = stmt.executeQuery("SELECT DISTINCT county FROM " + sqlDate + " WHERE state = '" + selectedState + "' ORDER BY county;");
 					
 					// delete every item in the counties combo-box except for the default
-					for (int i = counties.getItemCount() - 1; i >= 0; i--)
+					for (int i = counties1.getItemCount() - 1; i >= 0; i--)
 					{
-						if (!counties.getItemAt(i).equals("SELECT COUNTY"))
+						if (!counties1.getItemAt(i).equals("SELECT COUNTY"))
 						{
-							counties.removeItemAt(i);
+							counties1.removeItemAt(i);
 						}
 					}
 					
 					if (enableCounties)
 					{
-						counties.setEnabled(true);
+						counties1.setEnabled(true);
 						while (all_counties.next()) // add all the states (plus DC!)
 						{
-							counties.addItem(all_counties.getString("county"));
+							counties1.addItem(all_counties.getString("county"));
 						}
 					}
 					conn.commit();
@@ -359,18 +358,19 @@ public class Corona extends JFrame
 	    /** 3rd **/
 	    // ComboBox ActionListener for county
 	    // when a county is selected
-	    counties.addActionListener(new ActionListener() {
+	    counties1.addActionListener(new ActionListener() {
 	    	public void actionPerformed(ActionEvent e)
 	    	{
-	    		final String selectedCounty = (String) counties.getSelectedItem();
+	    		final String selectedCounty = (String) counties1.getSelectedItem();
     			
 				if (selectedCounty.equals("SELECT COUNTY"))
 				{
-					cdra.setEnabled(false);
+					cdra1.setEnabled(false);
+					apply1.setEnabled(false);
 				}
 				else
 				{
-					cdra.setEnabled(true);
+					cdra1.setEnabled(true);
 				}
 				// uh... that's it for this ActionListener! :)
 	    	}
@@ -379,10 +379,10 @@ public class Corona extends JFrame
 	    /** 4th **/
 	    // ComboBox ActionListener for our special cdra
 	    // when either confirmed (cases), deaths, recoveries, or active is selected
-	    cdra.addActionListener(new ActionListener() {
+	    cdra1.addActionListener(new ActionListener() {
 	    	public void actionPerformed(ActionEvent e)
 	    	{
-	    		final String selectedCDRA = (String) cdra.getSelectedItem();
+	    		final String selectedCDRA = (String) cdra1.getSelectedItem();
     			
 				if (selectedCDRA.equals("SELECT"))
 				{
@@ -403,12 +403,12 @@ public class Corona extends JFrame
 		    	// How many cases/deaths/recoveries/actives were there in this particular county on this particular day?
 		    	try
 		    	{
-		    		final String selectedDate = (String) date.getSelectedItem();
+		    		final String selectedDate = (String) date1.getSelectedItem();
 		    		String sqlDate = sqlDateFormat(selectedDate);
 		    	    
-			    	final String selectedState = (String) states.getSelectedItem();
-			    	final String selectedCounty = (String) counties.getSelectedItem();
-			    	final String selectedCDRA = (String) cdra.getSelectedItem();
+			    	final String selectedState = (String) states1.getSelectedItem();
+			    	final String selectedCounty = (String) counties1.getSelectedItem();
+			    	final String selectedCDRA = (String) cdra1.getSelectedItem();
 			    	
 			    	result.setText(null); // clears the result pane
 			    	result.setColumns(1); // puts 1 column in the result pane
@@ -431,10 +431,363 @@ public class Corona extends JFrame
 	    });
 	    
 		/*** WHEW.. THAT WAS A LOT OF WORK! ***/
+	    /*** But there's still more... :( ***/
+	    
+	    /** SECOND QUERY **/
+	    /** SECOND QUERY **/
+	    /** SECOND QUERY **/
+	    
+	    
+	    /*** For our second query, we need the drop-downs for CDRA, a state, a county, and two day selections ***/
+	    /*** How many new cases/deaths/recoveries active cases were there between two days? ***/
+		
+	    JComboBox<String> date2a = new JComboBox<String>();
+	    date2a.addItem("SELECT DAY");
+	    date2a.addItem("March 24, 2020");
+	    date2a.addItem("March 31, 2020");
+	    date2a.addItem("April 7, 2020");
+	    date2a.addItem("April 14, 2020");
+	    date2a.addItem("April 21, 2020");
+	    date2a.addItem("April 28, 2020");
+	    date2a.addItem("May 5, 2020");
+	    date2a.addItem("May 12, 2020");
+	    date2a.addItem("May 19, 2020");
+	    date2a.addItem("May 26, 2020");
+	    date2a.addItem("June 2, 2020");
+	    date2a.addItem("June 9, 2020");
+	    date2a.addItem("June 16, 2020");
+	    date2a.addItem("June 23, 2020");
+	    date2a.addItem("June 30, 2020");
+	    date2a.addItem("July 7, 2020");
+	    date2a.addItem("July 14, 2020");
+	    date2a.addItem("July 21, 2020");
+	    date2a.setEnabled(true); // this combo-box is to ALWAYS be enabled! :)
+	    
+	    JComboBox<String> date2b = new JComboBox<String>();
+	    date2b.addItem("SELECT DAY");
+	    date2b.addItem("March 24, 2020");
+	    date2b.addItem("March 31, 2020");
+	    date2b.addItem("April 7, 2020");
+	    date2b.addItem("April 14, 2020");
+	    date2b.addItem("April 21, 2020");
+	    date2b.addItem("April 28, 2020");
+	    date2b.addItem("May 5, 2020");
+	    date2b.addItem("May 12, 2020");
+	    date2b.addItem("May 19, 2020");
+	    date2b.addItem("May 26, 2020");
+	    date2b.addItem("June 2, 2020");
+	    date2b.addItem("June 9, 2020");
+	    date2b.addItem("June 16, 2020");
+	    date2b.addItem("June 23, 2020");
+	    date2b.addItem("June 30, 2020");
+	    date2b.addItem("July 7, 2020");
+	    date2b.addItem("July 14, 2020");
+	    date2b.addItem("July 21, 2020");
+	    date2b.setEnabled(false); // this should be disabled if no first date is selected
+	    
+	    
+		// state combo-box
+	    JComboBox<String> states2 = new JComboBox<String>();
+	    states2.addItem("SELECT STATE");
+	    // don't add anything until a date is selected
+	    states2.setEnabled(false); // this should be disabled if no second date is selected
+	    
+	    // county combo-box
+	    JComboBox<String> counties2 = new JComboBox<String>();
+	    counties2.addItem("SELECT COUNTY");
+	    // don't add anything until a state is selected
+	    counties2.setEnabled(false); // this should be disabled if no state is selected
+	    
+	    // confirmed (cases), deaths, recoveries, or active?
+	    JComboBox<String> cdra2 = new JComboBox<String>();
+		// add items to the combo box
+		cdra2.addItem("SELECT");
+		cdra2.addItem("confirmed");
+		cdra2.addItem("deaths");
+		cdra2.addItem("recovered");
+		cdra2.addItem("active");
+		cdra2.setEnabled(false); // this combo-box is to ALWAYS be enabled! :)
+		
+		// second apply button (for determining the number of cases)
+	    JButton apply2 = new JButton("Apply");
+	    Dimension a2Size = to_main.getPreferredSize();
+	    apply2.setBounds(330, 280, a2Size.width, a2Size.height);
+	    apply2.setEnabled(false); // this should be disabled if no selection is made in CDRA
+		
+	    
+	    
+	    /** Now for the action listeners **/
+		/** 1st **/
+		// ActionListener for the first date
+		date2a.addActionListener(new ActionListener() {
+	    	public void actionPerformed(ActionEvent e)
+	    	{
+	    		final String selectedDate = (String) date2a.getSelectedItem();
+	    	    String sqlDate = sqlDateFormat(selectedDate);
+	    	    
+	    	    if (sqlDate == null) // if no date is selected, remove all the states!
+	    	    {
+	    	    	// disable all the buttons and combo-boxes above it!
+	    	    	date2b.setEnabled(false);
+	    	    	counties2.setEnabled(false);
+	    	    	states2.setEnabled(false);
+	    	    	cdra2.setEnabled(false);
+	    	    	apply2.setEnabled(false);
+	    	    	return;
+	    	    }
+	    	    else
+	    	    {
+	    	    	date2b.setEnabled(true);
+	    	    }
+            }
+	    });
+		
+		/** 2nd **/
+		// ActionListener for the second date
+		date2b.addActionListener(new ActionListener() {
+	    	public void actionPerformed(ActionEvent e)
+	    	{
+	    		final String selectedDateA = (String) date2a.getSelectedItem();
+	    		final String selectedDateB = (String) date2b.getSelectedItem();
+	    	    String sqlDateA = sqlDateFormat(selectedDateA);
+	    	    String sqlDateB = sqlDateFormat(selectedDateB);
+	    	    
+	    	    boolean enableStates = false;
+	    	    
+	    	    if (sqlDateB == null) // if no date is selected, remove all the states!
+	    	    {
+	    	    	states2.setEnabled(false);
+	    	    	counties2.setEnabled(false);
+	    	    	cdra2.setEnabled(false);
+	    	    	apply2.setEnabled(false);
+	    	    	// delete every item in the states combo-box except for the default
+					for (int i = states2.getItemCount() - 1; i >= 0; i--)
+					{
+						if (!states2.getItemAt(i).equals("SELECT STATE"))
+						{
+							states2.removeItemAt(i);
+						}
+					}
+	    	    	return;
+	    	    }
+	    	    else
+	    	    {
+	    	    	enableStates = true;
+	    	    }
+	    	    
+	    	    // now populate the states combo-box with... the states!
+	    	    try
+	    	    {
+	    	    	states2.setEnabled(false); // before you reset its contents
+	    	    	ResultSet all_states;
+					all_states = stmt.executeQuery("SELECT DISTINCT " + sqlDateA + ".state FROM " + sqlDateA + ", " + sqlDateB + " WHERE " + sqlDateA + ".state = " + sqlDateB + ".state ORDER BY " + sqlDateA + ".state;");
+					
+					// delete every item in the states combo-box except for the default
+					for (int i = states2.getItemCount() - 1; i >= 0; i--)
+					{
+						if (!states2.getItemAt(i).equals("SELECT STATE"))
+						{
+							states2.removeItemAt(i);
+						}
+					}
+					
+					if (enableStates)
+					{
+						states2.setEnabled(true);
+						while (all_states.next()) // add all the states (plus DC!)
+						{
+							states2.addItem(all_states.getString("state"));
+						}
+					}
+					conn.commit();
+				}
+	    	    catch (Exception e1)
+	    	    {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+	    	    
+            }
+	    });
+		
+		
+		/** 3rd **/
+	    // ComboBox ActionListener for state
+	    // when a state is selected
+	    states2.addActionListener(new ActionListener() {
+	    	public void actionPerformed(ActionEvent e)
+	    	{
+	    		final String selectedState = (String) states2.getSelectedItem();
+    			final String selectedDateA = (String) date2a.getSelectedItem(); // trust me, you'll need this
+    			final String selectedDateB = (String) date2b.getSelectedItem(); // trust me, you'll need this too
+    			String sqlDateA = sqlDateFormat(selectedDateA);
+    			String sqlDateB = sqlDateFormat(selectedDateB);
+    			
+    			boolean enableCounties = false;
+    			
+    			if (selectedState.equals("SELECT STATE"))
+    			{
+    				// just disable all the combo-boxes ahead!
+    				counties2.setEnabled(false);
+    				cdra2.setEnabled(false);
+    				apply2.setEnabled(false);
+    				return; // get out!
+    			}
+    			else
+    			{
+    				enableCounties = true;
+    			}
+    			
+    			// now populate the counties combo-box with... the counties!
+	    		try
+	    		{
+	    			counties2.setEnabled(false);
+	    			ResultSet all_counties = stmt.executeQuery("SELECT DISTINCT " + sqlDateA + ".county AS county FROM " + sqlDateA +  ", " + sqlDateB + " WHERE " + sqlDateA + ".state = '" + selectedState + "' AND " + sqlDateB + ".state = " + sqlDateA + ".state AND " + sqlDateA + ".county = " + sqlDateB + ".county ORDER BY county;");
+					
+					// delete every item in the counties combo-box except for the default
+					for (int i = counties2.getItemCount() - 1; i >= 0; i--)
+					{
+						if (!counties2.getItemAt(i).equals("SELECT COUNTY"))
+						{
+							counties2.removeItemAt(i);
+						}
+					}
+					
+					if (enableCounties)
+					{
+						counties2.setEnabled(true);
+						while (all_counties.next()) // add all the states (plus DC!)
+						{
+							counties2.addItem(all_counties.getString("county"));
+						}
+					}
+					conn.commit();
+	    		}
+	    		catch (SQLException e1)
+	    	    {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+	    	}
+	    });
+	    
+	    /** 4th **/
+	    // ComboBox ActionListener for county
+	    // when a county is selected
+	    counties2.addActionListener(new ActionListener() {
+	    	public void actionPerformed(ActionEvent e)
+	    	{
+	    		final String selectedCounty = (String) counties2.getSelectedItem();
+    			
+				if (selectedCounty.equals("SELECT COUNTY"))
+				{
+					cdra2.setEnabled(false);
+					apply2.setEnabled(false);
+				}
+				else
+				{
+					cdra2.setEnabled(true);
+				}
+				// uh... that's it for this ActionListener! :)
+	    	}
+	    });
+	    
+	    /** 5th **/
+	    // ComboBox ActionListener for our special cdra
+	    // when either confirmed (cases), deaths, recoveries, or active is selected
+	    cdra2.addActionListener(new ActionListener() {
+	    	public void actionPerformed(ActionEvent e)
+	    	{
+	    		final String selectedCDRA = (String) cdra2.getSelectedItem();
+    			
+				if (selectedCDRA.equals("SELECT"))
+				{
+					apply2.setEnabled(false);
+				}
+				else
+				{
+					apply2.setEnabled(true);
+				}
+	    	}
+	    });
+	    
+	    /** 6th **/
+	    apply2.addActionListener(new ActionListener() {
+	    	public void actionPerformed(ActionEvent e)
+	    	{
+	    		// this will be for the simplest query:
+		    	// How many cases/deaths/recoveries/actives were there in this particular county on this particular day?
+		    	try
+		    	{
+		    		final String selectedDateA = (String) date2a.getSelectedItem();
+		    		final String selectedDateB = (String) date2b.getSelectedItem();
+		    		String sqlDateA = sqlDateFormat(selectedDateA);
+		    		String sqlDateB = sqlDateFormat(selectedDateB);
+		    	    
+			    	final String selectedState = (String) states2.getSelectedItem();
+			    	final String selectedCounty = (String) counties2.getSelectedItem();
+			    	final String selectedCDRA = (String) cdra2.getSelectedItem();
+			    	
+			    	result.setText(null); // clears the result pane
+			    	result.setColumns(1); // puts 1 column in the result pane
+			    	
+			    	ResultSet cdraResult;
+			    	// I warn you, this is going to get dizzying...
+			    	cdraResult = stmt.executeQuery("SELECT DISTINCT (" + sqlDateB + "." + selectedCDRA + " - " + sqlDateA + "." + selectedCDRA + ") AS " + selectedCDRA
+			    			+ " FROM " + sqlDateB + ", " + sqlDateA
+			    			+ " WHERE " + sqlDateB + ".County = " + sqlDateA + ".County AND " + sqlDateB + ".State = " + sqlDateA + ".State AND "
+			    			+ sqlDateA + ".State = '" + selectedState + "' AND " + sqlDateA + ".County = '" + selectedCounty + "';");
+			    	while (cdraResult.next())
+			    	{
+			    		// result is the name of the JTextArea to which the query answer will be outputted
+			    		result.append( Integer.toString(cdraResult.getInt(selectedCDRA)) );
+			    	}
+			    	
+		    	}
+		    	catch (SQLException e1)
+	    	    {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+	    	}
+	    });
+	    
+	    
+	    /** THIRD QUERY **/
+	    /** THIRD QUERY **/
+	    /** THIRD QUERY **/
+	    
+		
+	    
+	    
+	    /** DONE SETTING UP ALL THE QUERIES **/
+	    
+	    /** DONE SETTING UP ALL THE QUERIES **/
+	    
+	    /** DONE SETTING UP ALL THE QUERIES **/
+	    
+	    /** DONE SETTING UP ALL THE QUERIES **/
+	    
+	    /** DONE SETTING UP ALL THE QUERIES **/
+	    
+	    
+	    
+	    /** NOW TO SET UP THE DATA FRAME!!! **/
+	    
+	    /** NOW TO SET UP THE DATA FRAME!!! **/
+	    
+	    /** NOW TO SET UP THE DATA FRAME!!! **/
+	    
+	    /** NOW TO SET UP THE DATA FRAME!!! **/
+	    
+	    /** NOW TO SET UP THE DATA FRAME!!! **/
+	    
+	    
 	    /*** Now let's setup the data frame ***/
 	    
 	    /**  First and foremost, put up the JTextArea! **/
 	    result.setBounds(500, 100, 250, 350); // x-coordinate, y-coordinate, x-length, y-length
+	    
 	    
 	    /** For the first query **/
 	    // "On (date), (county), (state) had how many (cases, deaths, recoveries, active)?"
@@ -444,12 +797,12 @@ public class Corona extends JFrame
 	    q1_part1.setBounds(20, 60, q1p1size.width, q1p1size.height); // x-coordinate, y-coordinate, x-length, y-length
 	    
 	    // position the date combo-box
-	    date.setBounds(50, 100, 150, 25); // x-coordinate, y-coordinate, x-length, y-length
+	    date1.setBounds(50, 100, 150, 25); // x-coordinate, y-coordinate, x-length, y-length
 	    
 	    // NEXT LINE!
 	    
 	    // position the counties combo-box
-	    counties.setBounds(15, 130, 200, 25); // x-coordinate, y-coordinate, x-length, y-length
+	    counties1.setBounds(15, 130, 200, 25); // x-coordinate, y-coordinate, x-length, y-length
 	    
 	    // next text
 	    JLabel q1_part2 = new JLabel("County,");
@@ -458,7 +811,7 @@ public class Corona extends JFrame
 	    q1_part2.setBounds(215, 90, q1p2size.width, q1p2size.height); // x-coordinate, y-coordinate, x-length, y-length
 	    
 	    // position the states combo-box
-	    states.setBounds(275, 130, 200, 25); // x-coordinate, y-coordinate, x-length, y-length
+	    states1.setBounds(275, 130, 200, 25); // x-coordinate, y-coordinate, x-length, y-length
 	    
 	    // NEXT LINE!
 	    
@@ -469,7 +822,7 @@ public class Corona extends JFrame
 	    q1_part3.setBounds(20, 120, q1p2size.width, q1p2size.height); // x-coordinate, y-coordinate, x-length, y-length
 	    
 	    // position the cdra combo-box
-	    cdra.setBounds(130, 160, 125, 25);
+	    cdra1.setBounds(130, 160, 125, 25);
 	    
 	    // one final question mark...
 	    JLabel q1_part4 = new JLabel("?");
@@ -478,6 +831,60 @@ public class Corona extends JFrame
 	    q1_part4.setBounds(255, 120, q1p2size.width, q1p2size.height); // x-coordinate, y-coordinate, x-length, y-length
 	    
 	    // we've already positioned the apply button... at the start!
+	    
+	    
+	    
+	    /** For the second query... */
+	    
+	    // "Between (dateA) and (dateB), (county),(state) had how many more (cases/deaths/recoveries/active)?
+	    JLabel q2_part1 = new JLabel("Between");
+	    Dimension q2p1size = new Dimension(150, 100);
+	    q2_part1.setFont(new Font("", Font.PLAIN, 15)); // change the font size
+	    q2_part1.setBounds(20, 180, q2p1size.width, q2p1size.height); // x-coordinate, y-coordinate, x-length, y-length
+	    
+	    // first menu
+	    date2a.setBounds(80, 220, 150, 25);
+	    
+	    // next text
+	    JLabel q2_part2 = new JLabel("and");
+	    Dimension q2p2size = new Dimension(80, 50);
+	    q2_part2.setFont(new Font("", Font.PLAIN, 15)); // change the font size
+	    q2_part2.setBounds(235, 205, q2p2size.width, q2p2size.height); // x-coordinate, y-coordinate, x-length, y-length
+	    
+	    // second menu
+	    date2b.setBounds(270, 220, 150, 25);
+	    
+	    // NEXT LINE!
+	    
+	    // position the counties combo-box
+	    counties2.setBounds(15, 250, 200, 25); // x-coordinate, y-coordinate, x-length, y-length
+	    
+	    // next text
+	    JLabel q2_part3 = new JLabel("County,");
+	    Dimension q2p3size = new Dimension(150, 100);
+	    q2_part3.setFont(new Font("", Font.PLAIN, 15)); // change the font size
+	    q2_part3.setBounds(215, 210, q2p3size.width, q2p3size.height); // x-coordinate, y-coordinate, x-length, y-length
+	    
+	    // position the states combo-box
+	    states2.setBounds(275, 250, 200, 25); // x-coordinate, y-coordinate, x-length, y-length
+	    
+	    // NEXT LINE!
+	    
+	    // next text
+	    JLabel q2_part4 = new JLabel("had how many more");
+	    Dimension q2p4size = new Dimension(400, 100);
+	    q2_part4.setFont(new Font("", Font.PLAIN, 15)); // change the font size
+	    q2_part4.setBounds(20, 240, q2p4size.width, q2p4size.height); // x-coordinate, y-coordinate, x-length, y-length
+	    
+	    // final combo-box
+	    cdra2.setBounds(170, 280, 125, 25);
+	    
+	    // one final question mark...
+	    JLabel q2_part5 = new JLabel("?");
+	    Dimension q2p5size = new Dimension(50, 50);
+	    q2_part5.setFont(new Font("", Font.PLAIN, 15)); // change the font size
+	    q2_part5.setBounds(295, 265, q2p5size.width, q2p5size.height); // x-coordinate, y-coordinate, x-length, y-length
+	    
 	    
 	    /** Before anything can be added... **/
 	    countymenu.setLayout(null);
@@ -496,12 +903,27 @@ public class Corona extends JFrame
 	    countymenu.add(q1_part3);
 	    countymenu.add(q1_part4);
 	    // dropboxes for first query
-	    countymenu.add(date);
-	    countymenu.add(counties);
-	    countymenu.add(states);
-	    countymenu.add(cdra);
+	    countymenu.add(date1);
+	    countymenu.add(counties1);
+	    countymenu.add(states1);
+	    countymenu.add(cdra1);
 	    // apply button
 	    countymenu.add(apply1);
+	    
+	    // text for the second query
+	    countymenu.add(q2_part1);
+	    countymenu.add(q2_part2);
+	    countymenu.add(q2_part3);
+	    countymenu.add(q2_part4);
+	    countymenu.add(q2_part5);
+	    // dropboxes for second query
+	    countymenu.add(date2a);
+	    countymenu.add(date2b);
+	    countymenu.add(counties2);
+	    countymenu.add(states2);
+	    countymenu.add(cdra2);
+	    // apply button
+	    countymenu.add(apply2);
 	    
 	    // Finally, display everything!
 	    countymenu.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
@@ -647,4 +1069,11 @@ ORDER BY county;
 SELECT deaths
 FROM April_14_2020
 WHERE state = "Alabama" AND county = "Talladega";
+
+-- How many new cases in St. Tammany Parish, Louisiana arose between
+-- March 31 and April 21?
+SELECT DISTINCT (April_21_2020.Confirmed - March_31_2020.Confirmed) AS newcases
+FROM April_21_2020, March_31_2020
+WHERE April_21_2020.County = March_31_2020.County AND April_21_2020.State = March_31_2020.State AND
+March_31_2020.State = "Louisiana" AND March_31_2020.County = "St. Tammany";
 ***/
