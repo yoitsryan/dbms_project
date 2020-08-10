@@ -7,6 +7,7 @@ import javax.sql.rowset.*;
 import java.awt.*; // includes Dimension, Button, KeyListener
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.TextArea;
 
 public class Corona extends JFrame
 {
@@ -228,11 +229,23 @@ public class Corona extends JFrame
 	    apply1.setBounds(300, 160, a1Size.width, a1Size.height);
 	    apply1.setEnabled(false); // this should be disabled if no selection is made in CDRA
 	    
+	    
+	    /*************************/
 	    /** Finally, a bonus... we need to provide a JTextArea to
 	        output the results of ANY query! **/
 	    JTextArea result = new JTextArea();
+	    // result.setBounds(500, 100, 250, 350); // x-coordinate, y-coordinate, x-length, y-length
+	    result.setLineWrap(true); // to wrap text...
+	    result.setWrapStyleWord(true); // and ensure no words are split
+	    
 	    JScrollPane scrollable = new JScrollPane(result);
-	    // this will change (in terms of number of columns) based on the query performed
+	    scrollable.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+	    scrollable.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+	    // scrollable.setSize(100,100);
+	    scrollable.setBounds(500, 100, 250, 350);
+	    // we need to be able to scroll to see a possible motherlode of query results!
+	    /*************************/
+	    
 	    
 	    
 	    /** Next, we have to provide ActionListeners for each of these... **/
@@ -951,7 +964,21 @@ public class Corona extends JFrame
 	    	    {
 	    	    	states3.setEnabled(false); // before you reset its contents
 	    	    	ResultSet all_states;
-					all_states = stmt.executeQuery("SELECT DISTINCT " + sqlDateA + ".state FROM " + sqlDateA + ", " + sqlDateB + " WHERE " + sqlDateA + ".state = " + sqlDateB + ".state ORDER BY " + sqlDateA + ".state;");
+	    	    	
+	    	    	if (!sqlDateA.equals(sqlDateB)) // two different dates selected
+	    	    	{
+	    	    		all_states = stmt.executeQuery("SELECT DISTINCT " + sqlDateA + ".state FROM " + sqlDateA + ", " + sqlDateB + " WHERE " + sqlDateA + ".state = " + sqlDateB + ".state ORDER BY " + sqlDateA + ".state;");
+	    	    	}
+	    	    	else
+	    	    	{
+	    	    		all_states = stmt.executeQuery("SELECT DISTINCT state FROM " + sqlDateA + " ORDER BY state;");
+	    	    		/*
+	    	    		 * -- output all the states from a particular day
+								SELECT DISTINCT state
+								FROM March_24_2020
+								ORDER BY state;
+	    	    		 */
+	    	    	}
 					
 					// delete every item in the states combo-box except for the default
 					for (int i = states3.getItemCount() - 1; i >= 0; i--)
@@ -975,6 +1002,7 @@ public class Corona extends JFrame
 	    	    catch (Exception e1)
 	    	    {
 					// TODO Auto-generated catch block
+	    	    	System.out.println("SQL Failure\n" + e1);
 					e1.printStackTrace();
 				}
 	    	    
@@ -1012,7 +1040,22 @@ public class Corona extends JFrame
 	    		try
 	    		{
 	    			counties3.setEnabled(false);
-	    			ResultSet all_counties = stmt.executeQuery("SELECT DISTINCT " + sqlDateA + ".county AS county FROM " + sqlDateA +  ", " + sqlDateB + " WHERE " + sqlDateA + ".state = '" + selectedState + "' AND " + sqlDateB + ".state = " + sqlDateA + ".state AND " + sqlDateA + ".county = " + sqlDateB + ".county ORDER BY county;");
+	    			ResultSet all_counties;
+	    			
+	    			if (!sqlDateA.equals(sqlDateB)) // two different dates selected
+	    			{
+		    			all_counties = stmt.executeQuery("SELECT DISTINCT " + sqlDateA + ".county AS county FROM " + sqlDateA +  ", " + sqlDateB + " WHERE " + sqlDateA + ".state = '" + selectedState + "' AND " + sqlDateB + ".state = " + sqlDateA + ".state AND " + sqlDateA + ".county = " + sqlDateB + ".county ORDER BY county;");
+	    			}
+	    			else // or not
+	    			{
+	    				all_counties = stmt.executeQuery("SELECT DISTINCT county FROM " + sqlDateA + " WHERE state = '" + selectedState + "' ORDER BY county;");
+	    				/*
+	    				 * SELECT DISTINCT county
+							FROM March_24_2020
+							WHERE state = "Alabama"
+							ORDER BY county;
+	    				 */
+	    			}
 					
 					// delete every item in the counties combo-box except for the default
 					for (int i = counties3.getItemCount() - 1; i >= 0; i--)
@@ -1099,14 +1142,37 @@ public class Corona extends JFrame
 			    	
 			    	ResultSet comparedCounties;
 			    	// I warn you, this is going to get VERY dizzying...
-			    	String query_line1 = "SELECT DISTINCT " + sqlDateA + ".county, " + sqlDateA + ".state, " + sqlDateA + "." + selectedCDRA + " ";
-			    	String query_line2 = "FROM " + sqlDateA + ", " + sqlDateB + " ";
-			    	String query_line3 = "WHERE " + sqlDateA + "." + selectedCDRA + " " + ineqSign + " ";
-			    	String query_line4 = "(SELECT " + selectedCDRA + " FROM " + sqlDateB + " WHERE state = '" + selectedState + "' AND county = '" + selectedCounty + "') ";
-			    	String query_line5 = "ORDER BY " + sqlDateA + ".state;";
-			    	String full_query = query_line1 + query_line2 + query_line3 + query_line4 + query_line5;
+			    	if (sqlDateA.equals(sqlDateB)) // same dates were selected
+			    	{
+			    		String query_line1 = "SELECT DISTINCT county, state, " + selectedCDRA + " ";
+			    		String query_line2 = "FROM " + sqlDateA + " ";
+			    		String query_line3 = "WHERE " + selectedCDRA + " " + ineqSign + " ";
+			    		String query_line4 = "(SELECT "  + selectedCDRA + " FROM " + sqlDateA + " WHERE state = '" + selectedState + "' AND county = '" + selectedCounty + "') ";
+	    				String query_line5 = "ORDER BY " + selectedCDRA + " desc;";
+	    				String full_query = query_line1 + query_line2 + query_line3 + query_line4 + query_line5;
+				    	comparedCounties = stmt.executeQuery(full_query);
 			    		
-			    	comparedCounties = stmt.executeQuery(full_query);
+			    		/* EXAMPLE:
+			    		 * -- with only 1 date selected
+							SELECT DISTINCT County, State, Confirmed
+							FROM March_24_2020
+							WHERE Confirmed > (SELECT Confirmed
+											   FROM March_24_2020
+							                   WHERE State = "Texas" AND County = "Bexar")
+							ORDER BY Confirmed desc;
+						*/
+			    	}
+			    	else // if they're not the same dates
+			    	{
+			    		String query_line1 = "SELECT DISTINCT " + sqlDateA + ".county, " + sqlDateA + ".state, " + sqlDateA + "." + selectedCDRA + " ";
+				    	String query_line2 = "FROM " + sqlDateA + ", " + sqlDateB + " ";
+				    	String query_line3 = "WHERE " + sqlDateA + "." + selectedCDRA + " " + ineqSign + " ";
+				    	String query_line4 = "(SELECT " + selectedCDRA + " FROM " + sqlDateB + " WHERE state = '" + selectedState + "' AND county = '" + selectedCounty + "') ";
+				    	String query_line5 = "ORDER BY " + sqlDateA + "." + selectedCDRA + " desc;";
+				    	String full_query = query_line1 + query_line2 + query_line3 + query_line4 + query_line5;
+				    	comparedCounties = stmt.executeQuery(full_query);
+			    	}
+			    		
 			    	
 			    	while (comparedCounties.next())
 			    	{
@@ -1151,7 +1217,7 @@ public class Corona extends JFrame
 	    /*** Now let's setup the data frame ***/
 	    
 	    
-	    /**  First and foremost, put up the JTextArea! **/
+	    /**  First and foremost, put up the JTextArea (inside the JScrollPane)! **/
 	    result.setBounds(500, 100, 250, 350); // x-coordinate, y-coordinate, x-length, y-length
 	    
 	    
@@ -1321,7 +1387,8 @@ public class Corona extends JFrame
 	    // button for main menu
 	    countymenu.add(to_main);
 	    // text area
-	    countymenu.add(result);
+	    // countymenu.add(result); // JTextArea, in a JPanel. Can I get any scroll-bars?
+	    countymenu.add(scrollable);
 	    
 	    // text for the first query
 	    countymenu.add(q1_part1);
@@ -1526,6 +1593,14 @@ March_31_2020.State = "Louisiana" AND March_31_2020.County = "St. Tammany";
 SELECT DISTINCT April_07_2020.County, April_07_2020.State, April_07_2020.Confirmed
 FROM April_07_2020, March_24_2020
 WHERE April_07_2020.Confirmed > (SELECT Confirmed
-				 FROM March_24_2020
-				 WHERE County = "Bexar")
+								 FROM March_24_2020
+								 WHERE County = "Bexar")
+								 
+-- with only 1 date selected
+SELECT DISTINCT County, State, Confirmed
+FROM March_24_2020
+WHERE Confirmed > (SELECT Confirmed
+				   FROM March_24_2020
+                   WHERE State = "Texas" AND County = "Bexar")
+ORDER BY Confirmed desc;
 ***/
