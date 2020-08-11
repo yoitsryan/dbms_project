@@ -963,15 +963,17 @@ public class Corona extends JFrame
 	    	    try
 	    	    {
 	    	    	states3.setEnabled(false); // before you reset its contents
+	    	    	Statement getStates;
+	    	    	getStates = conn.createStatement();
 	    	    	ResultSet all_states;
 	    	    	
 	    	    	if (!sqlDateA.equals(sqlDateB)) // two different dates selected
 	    	    	{
-	    	    		all_states = stmt.executeQuery("SELECT DISTINCT " + sqlDateA + ".state FROM " + sqlDateA + ", " + sqlDateB + " WHERE " + sqlDateA + ".state = " + sqlDateB + ".state ORDER BY " + sqlDateA + ".state;");
+	    	    		all_states = getStates.executeQuery("SELECT DISTINCT " + sqlDateA + ".state FROM " + sqlDateA + ", " + sqlDateB + " WHERE " + sqlDateA + ".state = " + sqlDateB + ".state ORDER BY " + sqlDateA + ".state;");
 	    	    	}
 	    	    	else
 	    	    	{
-	    	    		all_states = stmt.executeQuery("SELECT DISTINCT state FROM " + sqlDateA + " ORDER BY state;");
+	    	    		all_states = getStates.executeQuery("SELECT DISTINCT state FROM " + sqlDateA + " ORDER BY state;");
 	    	    		/*
 	    	    		 * -- output all the states from a particular day
 								SELECT DISTINCT state
